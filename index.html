@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockchain Voting System</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .candidate { margin: 10px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    .admin-section { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Blockchain Voting System</h1>
+  <div id="account">Account: Not connected</div>
+
+  <h3>Candidates</h3>
+  <div id="candidates"></div>
+  <button onclick="getResults()">View Results</button>
+  <div id="results"></div>
+
+  <script>
+    let web3;
+    let account;
+    let contract;
+
+    const contractAddress = "YOUR_CONTRACT_ADDRESS";
+    const contractABI = [
+      // ABI from the Voting contract
+      // (only the necessary parts are shown for simplicity)
+      {"inputs":[{"internalType":"string[]","name":"candidateNames","type":"string[]"}],"stateMutability":"nonpayable","type":"constructor"},
+      {"inputs":[],"name":"getCandidates","outputs":[{"internalType":"string[]","name":"","type":"string[]"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"string","name":"candidate","type":"string"}],"name":"vote","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"registerVoter","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[{"internalType":"string","name":"candidate","type":"string"}],"name":"getVotes","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+    ];
+
+    async function connectMetaMask() {
+      if (window.ethereum) {
+        try {
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+          web3 = new Web3(window.ethereum);
+          const accounts = await web3.eth.getAccounts();
+          account = accounts[0];
+          document.getElementById("account").innerText = "Account: " + account;
+          contract = new web3.eth.Contract(contractABI, contractAddress);
+          loadCandidates();
+        } catch (error) {
+          console.error("User denied account access", error);
+        }
+      } else {
+        alert("MetaMask not detected. Please install MetaMask to continue.");
+      }
+    }
+
+    async function loadCandidates() {
+      const candidateNames = await contract.methods.getCandidates().call();
+      const candidatesDiv = document.getElementById("candidates");
+      candidatesDiv.innerHTML = "";
+      candidateNames.forEach((name) => {
+        const candidateDiv = document.createElement("div");
+        candidateDiv.className = "candidate";
+        candidateDiv.innerHTML = `
+          <p>${name}</p>
+          <button onclick="vote('${name}')">Vote for ${name}</button>
+        `;
+        candidatesDiv.appendChild(candidateDiv);
+      });
+    }
+
+    async function vote(candidate) {
+      try {
+        await contract.methods.vote(candidate).send({ from: account });
+        alert(`Vote for ${candidate} has been cast!`);
+      } catch (error) {
+        console.error("Error voting:", error);
+        alert("Error voting. Check the console for details.");
+      }
+    }
+
+    async function getResults() {
+      const candidateNames = await contract.methods.getCandidates().call();
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "<h3>Results</h3>";
+      for (const name of candidateNames) {
+        const voteCount = await contract.methods.getVotes(name).call();
+        resultsDiv.innerHTML += `<p>${name}: ${voteCount} votes</p>`;
+      }
+    }
+
+    // Connect to MetaMask on page load
+    window.addEventListener("load", connectMetaMask);
+  </script>
+</body>
+</html>

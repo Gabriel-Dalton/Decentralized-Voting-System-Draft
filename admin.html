@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+  <script src="web3.js"></script>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <div>Account: <span id="account"></span></div>
+
+  <h3>Add Candidate</h3>
+  <input type="text" id="candidateName" placeholder="Candidate Name">
+  <button onclick="addCandidate()">Add Candidate</button>
+
+  <h3>Registered Candidates</h3>
+  <div id="candidateList"></div>
+
+  <script>
+    async function addCandidate() {
+      const name = document.getElementById("candidateName").value;
+      await contract.methods.addCandidate(name).send({ from: account });
+      alert(`Candidate ${name} added.`);
+      loadCandidates();
+    }
+
+    async function loadCandidates() {
+      const candidates = await contract.methods.getCandidates().call();
+      const candidateList = document.getElementById("candidateList");
+      candidateList.innerHTML = "";
+      candidates.forEach(name => {
+        candidateList.innerHTML += `<p>${name}</p>`;
+      });
+    }
+
+    window.addEventListener("load", () => {
+      document.getElementById("account").innerText = account;
+      loadCandidates();
+    });
+  </script>
+</body>
+</html>

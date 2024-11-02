@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results Page</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.5.2/web3.min.js"></script>
+  <script src="web3.js"></script>
+</head>
+<body>
+  <h1>Results</h1>
+  <div>Account: <span id="account"></span></div>
+
+  <h3>Vote Counts</h3>
+  <div id="results"></div>
+
+  <script>
+    async function loadResults() {
+      const candidates = await contract.methods.getCandidates().call();
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "";
+      for (const name of candidates) {
+        const voteCount = await contract.methods.getVotes(name).call();
+        resultsDiv.innerHTML += `<p>${name}: ${voteCount} votes</p>`;
+      }
+    }
+
+    window.addEventListener("load", () => {
+      document.getElementById("account").innerText = account;
+      loadResults();
+    });
+  </script>
+</body>
+</html>
