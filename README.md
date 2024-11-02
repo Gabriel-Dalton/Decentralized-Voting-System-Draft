@@ -41,7 +41,7 @@ Currently, core functionalities like adding candidates, casting votes, and displ
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/Decentralized-Voting-System.git
+   git clone https://github.com/yourusername/Decentralized-Voting-System-Draft.git
    cd Decentralized-Voting-System
    ```
 
